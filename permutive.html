@@ -1,0 +1,194 @@
+
+<html>
+    <head>
+        <title>Prebid Permutive Demo Page</title>
+        <script src="//securepubads.g.doubleclick.net/tag/js/gpt.js"></script>
+        <script src="../prebid.js"></script>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+                background-color: #f4f4f4;
+                color: #333;
+                line-height: 1.6;
+            }
+
+            main {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 20px;
+                background: #ffffff;
+                border-radius: 10px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            h1 {
+                text-align: center;
+                color: #222;
+                margin-bottom: 30px;
+            }
+
+            button {
+                display: block;
+                margin: 20px auto;
+                padding: 12px 25px;
+                font-size: 16px;
+                color: #fff;
+                background-color: #007bff;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+
+            button:hover {
+                background-color: #0056b3;
+            }
+
+            .values {
+                margin: 20px 0;
+                padding: 15px;
+                border: 1px solid #ddd;
+                background-color: #f9f9f9;
+                border-radius: 5px;
+                text-align: center;
+            }
+
+            .values strong {
+                color: #007bff;
+            }
+
+            .info {
+                margin-top: 20px;
+                text-align: center;
+                font-size: 14px;
+                color: #555;
+            }
+
+            #banner1 {
+                margin: 30px auto;
+                text-align: center;
+            }
+        </style>
+        <script>
+            const sizes = [[970, 250]];
+            const PREBID_TIMEOUT = 1000;
+            const pindexs = ["105768", "110797", "178085", "73403", "81746", "81864", "81878", "82092", "84526", "85300"];
+
+            var googletag = googletag || {};
+            googletag.cmd = googletag.cmd || [];
+
+            var pbjs = pbjs || {};
+            pbjs.que = pbjs.que || [];
+
+            pbjs.setConfig({
+                realTimeData: {
+                    dataProviders: [
+                        {
+                            name: 'permutive',
+                            params: { acBidders: ['ix'] }
+                        }
+                    ]
+                }
+            });
+
+            pbjs.bidderSettings = {
+                standard: {
+                    storageAllowed: true
+                }
+            };
+
+            const adUnits = [
+                {
+                    code: '/62650033/sc_tetsuya/sc_tetsuya_970x250',
+                    mediaTypes: {
+                        video: {
+                            playerSize: sizes,
+                            context: 'outstream'
+                        }
+                    },
+                    bids: [
+                        {
+                            bidder: 'ix',
+                            params: {
+                                siteId: "715695",
+                                video: {
+                                    api: [2],
+                                    protocols: [2, 3, 5, 6],
+                                    minduration: 5,
+                                    maxduration: 30,
+                                    mimes: ['video/mp4', 'application/javascript']
+                                }
+                            }
+                        }
+                    ]
+                }
+            ];
+
+            pbjs.que.push(function () {
+                pbjs.addAdUnits(adUnits);
+            });
+
+            let slot1;
+            googletag.cmd.push(function () {
+                slot1 = googletag
+                    .defineSlot('/62650033/sc_tetsuya/sc_tetsuya_970x250', [1, 1], 'banner1')
+                    .addService(googletag.pubads())
+                    .setTargeting("ix_tetsuya", "1");
+                googletag.pubads().disableInitialLoad();
+                googletag.pubads().enableSingleRequest();
+                googletag.enableServices();
+            });
+
+            function refreshBid() {
+                pbjs.que.push(function () {
+                    pbjs.requestBids({
+                        timeout: PREBID_TIMEOUT,
+                        adUnitCodes: ['/62650033/sc_tetsuya/sc_tetsuya_970x250'],
+                        bidsBackHandler: function () {
+                            pbjs.setTargetingForGPTAsync(['/62650033/sc_tetsuya/sc_tetsuya_970x250']);
+                            googletag.pubads().refresh([slot1]);
+                        }
+                    });
+                });
+            }
+
+            function displayLocalStorageValues() {
+                const currentValues = localStorage.getItem('_pindexs');
+                const valuesDiv = document.getElementById('current-values');
+                if (currentValues) {
+                    valuesDiv.innerHTML = `<b>Current _pindexs:</b> <strong>${JSON.parse(currentValues).join(", ")}</strong>`;
+                } else {
+                    valuesDiv.innerHTML = `<b>Current _pindexs:</b> <strong>None</strong>`;
+                }
+            }
+
+            function addPindexsAndRefresh() {
+                localStorage.setItem('_pindexs', JSON.stringify(pindexs));
+                window.location.reload();
+            }
+
+            window.onload = displayLocalStorageValues;
+        </script>
+    </head>
+    <body>
+        <main>
+            <h1>Prebid Permutive Demo Page</h1>
+            <div id="banner1">
+                <script>
+                    googletag.cmd.push(function () {
+                        googletag.display('banner1');
+                    });
+                </script>
+            </div>
+
+            <div id="current-values" class="values"></div>
+
+            <button onclick="addPindexsAndRefresh()">Add _pindexs and Refresh</button>
+
+        </main>
+    </body>
+    <script>
+        window.refreshBid();
+    </script>
+</html>
